@@ -19,8 +19,18 @@ export class UserController {
 
   @UsePipes(ValidationPipe)
   @Post("/create")
-  create(@Body() newUser: CreateUserDto) {
-    return this.userService.create(newUser);
+  createNewUser(@Body() newUser: CreateUserDto) {
+    return this.userService.createNewUser(newUser);
+  }
+
+  @Get("/email/:param")
+  getUserByEmail(@Param("param") email: string) {
+    return this.userService.getUserByEmail(email);
+  }
+
+  @Post("/login")
+  loginByEmail(@Body() user: { email: string; password: string }) {
+    return this.userService.loginByEmail(user);
   }
 
   @Get()
