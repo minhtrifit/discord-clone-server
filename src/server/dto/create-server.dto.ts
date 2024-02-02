@@ -1,24 +1,16 @@
 import { IsNotEmpty, IsString, IsOptional } from "class-validator";
 
-export class CreateUserDto {
+export class CreateServerDto {
   @IsString()
   id: string;
 
   @IsNotEmpty()
   @IsString()
-  provider: string;
-
-  @IsNotEmpty()
-  @IsString()
-  email: string;
-
-  @IsNotEmpty()
-  @IsString()
   name: string;
 
+  @IsNotEmpty()
   @IsString()
-  @IsOptional()
-  password: string | null;
+  owner: string;
 
   @IsString()
   @IsOptional()

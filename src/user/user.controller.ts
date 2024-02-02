@@ -8,6 +8,7 @@ import {
   Delete,
   UsePipes,
   ValidationPipe,
+  Put,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -31,6 +32,16 @@ export class UserController {
   @Post("/login")
   loginByEmail(@Body() user: { email: string; password: string }) {
     return this.userService.loginByEmail(user);
+  }
+
+  @Put("/update/:id")
+  updateUserById(@Body() editUser: CreateUserDto) {
+    // {
+    //   "id": "8f483a7c-c6fc-40ee-86ce-0bac3d348955",
+    //   "name": "Minh Trí"
+    // }
+
+    return this.userService.updateUserById(editUser);
   }
 
   @Get()

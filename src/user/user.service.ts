@@ -38,6 +38,22 @@ export class UserService {
     }
   }
 
+  async updateUserById(editUser: CreateUserDto) {
+    try {
+      await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({ name: editUser.name })
+        .where("id = :id", { id: editUser.id })
+        .execute();
+
+      return { message: "Edit user successfully", user: editUser };
+    } catch (error) {
+      console.log("Something wrong", error);
+      return { message: "Something wrong" };
+    }
+  }
+
   async getUserByEmail(email: string) {
     try {
       const findUser = await this.userRepository.findOne({
