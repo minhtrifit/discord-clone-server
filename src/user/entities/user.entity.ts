@@ -19,4 +19,7 @@ export class User {
 
   @Column({ nullable: true, default: null })
   avatar: string;
+
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  created: Date;
 }
