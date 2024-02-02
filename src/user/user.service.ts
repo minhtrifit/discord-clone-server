@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserDto, EditUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../entities/index";
@@ -38,7 +38,7 @@ export class UserService {
     }
   }
 
-  async updateUserById(editUser: CreateUserDto) {
+  async updateUserById(editUser: EditUserDto) {
     try {
       await this.userRepository
         .createQueryBuilder()
