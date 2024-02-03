@@ -22,9 +22,15 @@ export class UserService {
       });
 
       if (findUser === null) {
-        const hashedPassword = await bcrypt.hash(newUser.password, saltRounds);
+        // Hash password with email provider user
+        if (newUser.provider === "email") {
+          const hashedPassword = await bcrypt.hash(
+            newUser.password,
+            saltRounds,
+          );
 
-        newUser.password = hashedPassword;
+          newUser.password = hashedPassword;
+        }
 
         await this.userRepository.save(newUser);
 
@@ -40,16 +46,53 @@ export class UserService {
 
   async updateUserById(editUser: EditUserDto) {
     try {
-      await this.userRepository
-        .createQueryBuilder()
-        .update(User)
-        .set({
-          name: editUser.name,
-          password: editUser.password,
-          avatar: editUser.avatar,
-        })
-        .where("id = :id", { id: editUser.id })
-        .execute();
+      const saltRounds = 10;
+      let hashedPassword = "";
+
+      if (editUser.password !== undefined) {
+        hashedPassword = await bcrypt.hash(editUser.password, saltRounds);
+
+        await this.userRepository
+          .createQueryBuilder()
+          .update(User)
+          .set({
+            password: hashedPassword,
+          })
+          .where("id = :id", { id: editUser.id })
+          .execute();
+      }
+
+      if (editUser.name !== undefined) {
+        await this.userRepository
+          .createQueryBuilder()
+          .update(User)
+          .set({
+            name: editUser.name,
+          })
+          .where("id = :id", { id: editUser.id })
+          .execute();
+      }
+
+      if (editUser.avatar !== undefined) {
+        await this.userRepository
+          .createQueryBuilder()
+          .update(User)
+          .set({
+            avatar: editUser.avatar,
+          })
+          .where("id = :id", { id: editUser.id })
+          .execute();
+      }
+
+      // await this.userRepository
+      //   .createQueryBuilder()
+      //   .update(User)
+      //   .set({
+      //     name: editUser.name,
+      //     avatar: editUser.avatar,
+      //   })
+      //   .where("id = :id", { id: editUser.id })
+      //   .execute();
 
       return { message: "Edit user successfully", user: editUser };
     } catch (error) {
