@@ -43,7 +43,11 @@ export class UserService {
       await this.userRepository
         .createQueryBuilder()
         .update(User)
-        .set({ name: editUser.name })
+        .set({
+          name: editUser.name,
+          password: editUser.password,
+          avatar: editUser.avatar,
+        })
         .where("id = :id", { id: editUser.id })
         .execute();
 
