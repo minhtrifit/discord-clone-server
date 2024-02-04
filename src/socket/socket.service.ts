@@ -1,8 +1,18 @@
 import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
 import { Server, Socket } from "socket.io";
+import { User, FriendPending } from "src/entities";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class SocketService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(FriendPending)
+    private readonly friendPendingRepository: Repository<FriendPending>,
+  ) {}
+
   users: { email: string; clientId: string }[] = [];
 
   getUserDisconnect(server: Server, clientId: string) {
@@ -40,13 +50,69 @@ export class SocketService {
       .to(client.id)
       .emit("user_connected", { clientId: client.id, email: email });
 
-    console.log("Users from connected", this.users);
+    // console.log("Users from connected", this.users);
 
-    return true;
+    return {
+      message: "Connect to sever socket successfully",
+      clientId: client.id,
+      email: email,
+    };
   }
 
   getAllUsers(server: Server) {
     server.emit("all_users", this.users);
     return true;
+  }
+
+  async sendFriendRequest(
+    server: Server,
+    senderEmail: string,
+    receiverEmail: string,
+  ) {
+    try {
+      const getOnlineReceiver = this.users.filter((user) => {
+        return user.email === receiverEmail;
+      });
+
+      if (getOnlineReceiver.length !== 0) {
+        const findSender = await this.userRepository.findOne({
+          where: { email: senderEmail },
+        });
+
+        for (let i = 0; i < getOnlineReceiver.length; ++i) {
+          server.to(getOnlineReceiver[i].clientId).emit("get_friend_request", {
+            message: "You have a new friend request",
+            user: findSender,
+          });
+        }
+      }
+
+      // Save pending request to database
+      const newPending = {
+        senderEmail: senderEmail,
+        receiverEmail: receiverEmail,
+      };
+
+      const findSender = await this.friendPendingRepository.findOne({
+        where: { senderEmail: senderEmail, receiverEmail: receiverEmail },
+      });
+
+      if (findSender === null)
+        await this.friendPendingRepository.save(newPending);
+
+      return {
+        message: "Send friend request, successfully",
+        senderEmail: senderEmail,
+        receiverEmail: receiverEmail,
+        status: true,
+      };
+    } catch (error) {
+      return {
+        message: "Send friend request, failed",
+        senderEmail: senderEmail,
+        receiverEmail: receiverEmail,
+        status: false,
+      };
+    }
   }
 }

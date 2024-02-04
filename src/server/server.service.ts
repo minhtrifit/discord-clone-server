@@ -62,20 +62,4 @@ export class ServerService {
       return { message: "Something wrong" };
     }
   }
-
-  findAll() {
-    return `This action returns all server`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} server`;
-  }
-
-  update(id: number, updateServerDto: UpdateServerDto) {
-    return `This action updates a #${id} server`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} server`;
-  }
 }

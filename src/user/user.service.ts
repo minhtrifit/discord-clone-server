@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { CreateUserDto, EditUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "../entities/index";
+import { User, FriendPending } from "../entities/index";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
 
@@ -11,6 +11,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(FriendPending)
+    private readonly friendPendingRepository: Repository<FriendPending>,
   ) {}
 
   async createNewUser(newUser: CreateUserDto) {
@@ -141,19 +143,25 @@ export class UserService {
     }
   }
 
-  findAll() {
-    return `This action returns all user`;
-  }
+  async getPendingByEmail(email: string) {
+    try {
+      const findPending = await this.friendPendingRepository.find({
+        where: { receiverEmail: email },
+      });
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+      const pendings = [];
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+      for (let i = 0; i < findPending.length; ++i) {
+        const findUser = await this.userRepository.findOne({
+          where: { email: findPending[i].senderEmail },
+        });
+        pendings.push(findUser);
+      }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+      return { message: "Get pending successfully", pendings: pendings };
+    } catch (error) {
+      console.log("Something wrong", error);
+      return { message: "Something wrong" };
+    }
   }
 }

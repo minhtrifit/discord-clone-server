@@ -24,24 +24,4 @@ export class ServerController {
   getJoinServerByUserId(@Param("id") id: string) {
     return this.serverService.getJoinServerByUserId(id);
   }
-
-  @Get()
-  findAll() {
-    return this.serverService.findAll();
-  }
-
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.serverService.findOne(+id);
-  }
-
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() updateServerDto: UpdateServerDto) {
-    return this.serverService.update(+id, updateServerDto);
-  }
-
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.serverService.remove(+id);
-  }
 }

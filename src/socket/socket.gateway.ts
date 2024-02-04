@@ -40,4 +40,15 @@ export class SocketGateway implements OnGatewayDisconnect {
   getAllUsers() {
     return this.socketService.getAllUsers(this.server);
   }
+
+  @SubscribeMessage("send_friend_request")
+  sendFriendRequest(
+    @MessageBody() data: { senderEmail: string; receiverEmail: string },
+  ) {
+    return this.socketService.sendFriendRequest(
+      this.server,
+      data.senderEmail,
+      data.receiverEmail,
+    );
+  }
 }
