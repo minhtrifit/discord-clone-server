@@ -86,6 +86,20 @@ export class SocketService {
         };
       }
 
+      // Check is friend already
+      const isFriend = await this.friendRepository.find({
+        where: { senderEmail: senderEmail, receiverEmail: receiverEmail },
+      });
+
+      if (isFriend !== null) {
+        return {
+          message: "Send friend request, failed",
+          senderEmail: senderEmail,
+          receiverEmail: receiverEmail,
+          status: false,
+        };
+      }
+
       // Check user is online (is exist)
       const getOnlineReceiver = this.users.filter((user) => {
         return user.email === receiverEmail;
