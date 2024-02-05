@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { CreateServerDto } from "./dto/create-server.dto";
-import { UpdateServerDto } from "./dto/update-server.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { JoinServer, Server, User } from "../entities/index";

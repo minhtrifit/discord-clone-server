@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { CreateUserDto, EditUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
-import { User, FriendPending } from "../entities/index";
+import { User, Friend, FriendPending } from "../entities/index";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
 
@@ -11,6 +10,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Friend)
+    private readonly friendRepository: Repository<Friend>,
     @InjectRepository(FriendPending)
     private readonly friendPendingRepository: Repository<FriendPending>,
   ) {}
@@ -159,6 +160,42 @@ export class UserService {
       }
 
       return { message: "Get pending successfully", pendings: pendings };
+    } catch (error) {
+      console.log("Something wrong", error);
+      return { message: "Something wrong" };
+    }
+  }
+
+  async getAllFriendsByUserEmail(email: string) {
+    try {
+      const emails = [];
+      const friends = [];
+
+      const senders = await this.friendRepository.find({
+        where: { senderEmail: email },
+      });
+
+      const receivers = await this.friendRepository.find({
+        where: { receiverEmail: email },
+      });
+
+      for (let i = 0; i < senders.length; ++i) {
+        emails.push(senders[i].receiverEmail);
+      }
+
+      for (let i = 0; i < receivers.length; ++i) {
+        emails.push(receivers[i].senderEmail);
+      }
+
+      for (let i = 0; i < emails.length; ++i) {
+        const findUser = await this.userRepository.findOne({
+          where: { email: emails[i] },
+        });
+
+        if (findUser !== null) friends.push(findUser);
+      }
+
+      return { message: "Get friends successfully", friends: friends };
     } catch (error) {
       console.log("Something wrong", error);
       return { message: "Something wrong" };

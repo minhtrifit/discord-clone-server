@@ -38,3 +38,18 @@ export class FriendPending {
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   dateSended: Date;
 }
+
+@Entity()
+export class Friend {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
+
+  @Column()
+  senderEmail: string;
+
+  @Column()
+  receiverEmail: string;
+
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  created: Date;
+}

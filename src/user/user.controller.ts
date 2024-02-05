@@ -12,7 +12,6 @@ import {
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto, EditUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Controller("user")
 export class UserController {
@@ -47,5 +46,10 @@ export class UserController {
   @Get("/pending/:email")
   getPendingByEmail(@Param("email") email: string) {
     return this.userService.getPendingByEmail(email);
+  }
+
+  @Get("/friends/:email")
+  getAllFriendsByUserEmail(@Param("email") email: string) {
+    return this.userService.getAllFriendsByUserEmail(email);
   }
 }

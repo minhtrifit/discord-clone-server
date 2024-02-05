@@ -51,4 +51,26 @@ export class SocketGateway implements OnGatewayDisconnect {
       data.receiverEmail,
     );
   }
+
+  @SubscribeMessage("ignore_friend_request")
+  ignoreFriendRequest(
+    @MessageBody() data: { senderEmail: string; receiverEmail: string },
+  ) {
+    return this.socketService.ignoreFriendRequest(
+      this.server,
+      data.senderEmail,
+      data.receiverEmail,
+    );
+  }
+
+  @SubscribeMessage("accept_friend_request")
+  acceptFriendRequest(
+    @MessageBody() data: { senderEmail: string; receiverEmail: string },
+  ) {
+    return this.socketService.acceptFriendRequest(
+      this.server,
+      data.senderEmail,
+      data.receiverEmail,
+    );
+  }
 }
