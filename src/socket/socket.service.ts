@@ -176,13 +176,18 @@ export class SocketService {
       }
 
       // Check is friend already
-      const isFriend = await this.friendRepository.findOne({
+      const isFriendReceiver = await this.friendRepository.findOne({
         where: { senderEmail: senderEmail, receiverEmail: receiverEmail },
       });
 
-      console.log("IS FRIEND", isFriend);
+      const isFriendSender = await this.friendRepository.findOne({
+        where: { senderEmail: receiverEmail, receiverEmail: senderEmail },
+      });
 
-      if (isFriend !== null) {
+      console.log("IS FRIEND RECEIVER", isFriendReceiver);
+      console.log("IS FRIEND SENDER", isFriendSender);
+
+      if (isFriendReceiver !== null || isFriendSender !== null) {
         return {
           message: "Send friend request, failed",
           senderEmail: senderEmail,
