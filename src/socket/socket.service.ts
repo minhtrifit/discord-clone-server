@@ -164,6 +164,8 @@ export class SocketService {
         where: { email: receiverEmail },
       });
 
+      console.log("FIND USER", findUser);
+
       if (findUser === null) {
         return {
           message: "Send friend request, failed",
@@ -174,9 +176,11 @@ export class SocketService {
       }
 
       // Check is friend already
-      const isFriend = await this.friendRepository.find({
+      const isFriend = await this.friendRepository.findOne({
         where: { senderEmail: senderEmail, receiverEmail: receiverEmail },
       });
+
+      console.log("IS FRIEND", isFriend);
 
       if (isFriend !== null) {
         return {
