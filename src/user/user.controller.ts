@@ -50,4 +50,9 @@ export class UserController {
   getAllFriendsByUserEmail(@Param("email") email: string) {
     return this.userService.getAllFriendsByUserEmail(email);
   }
+
+  @Get("/directmessages/:email")
+  getDirectMessagesByUserEmail(@Param("email") email: string) {
+    return this.userService.getDirectMessagesByUserEmail(email);
+  }
 }

@@ -81,4 +81,24 @@ export class SocketGateway implements OnGatewayDisconnect {
       data.email,
     );
   }
+
+  @SubscribeMessage("create_direct_message")
+  createDirectMessage(
+    @MessageBody() data: { ownerEmail: string; friendEmail: string },
+  ) {
+    return this.socketService.createDirectMessage(
+      data.ownerEmail,
+      data.friendEmail,
+    );
+  }
+
+  @SubscribeMessage("delete_direct_message")
+  deleteDirectMessage(
+    @MessageBody() data: { ownerEmail: string; friendEmail: string },
+  ) {
+    return this.socketService.deleteDirectMessage(
+      data.ownerEmail,
+      data.friendEmail,
+    );
+  }
 }

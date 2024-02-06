@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Server, Socket } from "socket.io";
-import { User, Friend, FriendPending } from "src/entities";
+import { User, Friend, FriendPending, DirectMessage } from "src/entities";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -13,6 +13,8 @@ export class SocketService {
     private readonly friendRepository: Repository<Friend>,
     @InjectRepository(FriendPending)
     private readonly friendPendingRepository: Repository<FriendPending>,
+    @InjectRepository(DirectMessage)
+    private readonly directMessageRepository: Repository<DirectMessage>,
   ) {}
 
   users: { email: string; clientId: string }[] = [];
@@ -403,6 +405,89 @@ export class SocketService {
       return {
         message: "Get online friends, failed",
         onlines: [],
+      };
+    }
+  }
+
+  async createDirectMessage(ownerEmail: string, friendEmail: string) {
+    try {
+      const findDirectMessage = await this.directMessageRepository.findOne({
+        where: { ownerEmail: ownerEmail, friendEmail: friendEmail },
+      });
+
+      if (findDirectMessage !== null) {
+        return {
+          message: "Create direct message, failed",
+          ownerEmail: ownerEmail,
+          friendEmail: friendEmail,
+        };
+      }
+
+      const newDirectMessage = {
+        ownerEmail: ownerEmail,
+        friendEmail: friendEmail,
+      };
+
+      await this.directMessageRepository.save(newDirectMessage);
+
+      const findFriend = await this.userRepository.findOne({
+        where: { email: friendEmail },
+      });
+
+      if (findFriend === null) {
+        return {
+          message: "Create direct message, failed",
+          ownerEmail: ownerEmail,
+          friendEmail: friendEmail,
+        };
+      }
+
+      // Send event to client
+      return {
+        message: "Create direct message, successfully",
+        friend: findFriend,
+      };
+    } catch (error) {
+      return {
+        message: "Create direct message, failed",
+        ownerEmail: ownerEmail,
+        friendEmail: friendEmail,
+      };
+    }
+  }
+
+  async deleteDirectMessage(ownerEmail: string, friendEmail: string) {
+    try {
+      const findDirectMessage = await this.directMessageRepository.findOne({
+        where: { ownerEmail: ownerEmail, friendEmail: friendEmail },
+      });
+
+      if (findDirectMessage !== null) {
+        await this.friendPendingRepository
+          .createQueryBuilder()
+          .delete()
+          .from(DirectMessage)
+          .where("ownerEmail = :ownerEmail", { ownerEmail: ownerEmail })
+          .andWhere("friendEmail = :friendEmail", { friendEmail: friendEmail })
+          .execute();
+
+        return {
+          message: "Delete direct message, successfully",
+          ownerEmail: ownerEmail,
+          friendEmail: friendEmail,
+        };
+      }
+
+      return {
+        message: "Delete direct message, failed",
+        ownerEmail: ownerEmail,
+        friendEmail: friendEmail,
+      };
+    } catch (error) {
+      return {
+        message: "Delete direct message, failed",
+        ownerEmail: ownerEmail,
+        friendEmail: friendEmail,
       };
     }
   }

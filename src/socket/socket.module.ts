@@ -2,10 +2,12 @@ import { Module } from "@nestjs/common";
 import { SocketService } from "./socket.service";
 import { SocketGateway } from "./socket.gateway";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { User, Friend, FriendPending } from "src/entities";
+import { User, Friend, FriendPending, DirectMessage } from "src/entities";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Friend, FriendPending])],
+  imports: [
+    TypeOrmModule.forFeature([User, Friend, FriendPending, DirectMessage]),
+  ],
   providers: [SocketGateway, SocketService],
 })
 export class SocketModule {}

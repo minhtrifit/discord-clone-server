@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { CreateUserDto, EditUserDto } from "./dto/create-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
-import { User, Friend, FriendPending } from "../entities/index";
+import { User, Friend, FriendPending, DirectMessage } from "../entities/index";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
 
@@ -14,6 +14,8 @@ export class UserService {
     private readonly friendRepository: Repository<Friend>,
     @InjectRepository(FriendPending)
     private readonly friendPendingRepository: Repository<FriendPending>,
+    @InjectRepository(DirectMessage)
+    private readonly directMessageRepository: Repository<DirectMessage>,
   ) {}
 
   async createNewUser(newUser: CreateUserDto) {
@@ -196,6 +198,29 @@ export class UserService {
       }
 
       return { message: "Get friends successfully", friends: friends };
+    } catch (error) {
+      console.log("Something wrong", error);
+      return { message: "Something wrong" };
+    }
+  }
+
+  async getDirectMessagesByUserEmail(email: string) {
+    try {
+      const findDirectMessages = await this.directMessageRepository.find({
+        where: { ownerEmail: email },
+      });
+
+      const friends = [];
+
+      for (let i = 0; i < findDirectMessages.length; ++i) {
+        const findUser = await this.userRepository.findOne({
+          where: { email: findDirectMessages[i].friendEmail },
+        });
+
+        friends.push(findUser);
+      }
+
+      return { message: "Get direct messages successfully", friends: friends };
     } catch (error) {
       console.log("Something wrong", error);
       return { message: "Something wrong" };

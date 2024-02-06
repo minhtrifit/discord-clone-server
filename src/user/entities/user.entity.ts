@@ -53,3 +53,15 @@ export class Friend {
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   created: Date;
 }
+
+@Entity()
+export class DirectMessage {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
+
+  @Column()
+  ownerEmail: string;
+
+  @Column()
+  friendEmail: string;
+}
