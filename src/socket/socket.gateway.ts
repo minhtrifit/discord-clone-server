@@ -73,4 +73,12 @@ export class SocketGateway implements OnGatewayDisconnect {
       data.receiverEmail,
     );
   }
+
+  @SubscribeMessage("get_online_friends")
+  getOnlineFriendsByUserEmail(@MessageBody() data: { email: string }) {
+    return this.socketService.getOnlineFriendsByUserEmail(
+      this.server,
+      data.email,
+    );
+  }
 }

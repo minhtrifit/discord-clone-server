@@ -17,7 +17,38 @@ export class SocketService {
 
   users: { email: string; clientId: string }[] = [];
 
-  getUserDisconnect(server: Server, clientId: string) {
+  async getFriendsByUserEmail(userEmail: string) {
+    const friends = [];
+
+    // Get friend from database
+    const friendListSend = await this.friendRepository.find({
+      where: { senderEmail: userEmail },
+    });
+
+    const friendListRec = await this.friendRepository.find({
+      where: { receiverEmail: userEmail },
+    });
+
+    for (let i = 0; i < friendListSend.length; ++i) {
+      const getFriend = await this.userRepository.findOne({
+        where: { email: friendListSend[i].receiverEmail },
+      });
+
+      if (getFriend !== null) friends.push(getFriend);
+    }
+
+    for (let i = 0; i < friendListRec.length; ++i) {
+      const getFriend = await this.userRepository.findOne({
+        where: { email: friendListRec[i].senderEmail },
+      });
+
+      if (getFriend !== null) friends.push(getFriend);
+    }
+
+    return friends;
+  }
+
+  async getUserDisconnect(server: Server, clientId: string) {
     const findUser = this.users.filter((user) => {
       return user.clientId === clientId;
     });
@@ -29,11 +60,39 @@ export class SocketService {
     // Send event to client
     server.emit("user_disconnect", findUser[0]);
 
-    console.log("Client disconnected:", clientId);
+    console.log("Client disconnected:", `${clientId}, ${findUser[0]?.email}}`);
     // console.log("Users from disconnected", this.users);
+
+    // Update online friends
+    const friends = await this.getFriendsByUserEmail(findUser[0]?.email);
+
+    // Get all online friends of disconnected user
+    const onlines = [];
+
+    for (let i = 0; i < friends.length; ++i) {
+      for (let j = 0; j < this.users.length; ++j) {
+        if (this.users[j].email === friends[i].email) {
+          onlines.push(this.users[j]);
+        }
+      }
+    }
+
+    // Send offline user to all online friend
+    const friend = await this.userRepository.findOne({
+      where: { email: findUser[0]?.email },
+    });
+
+    if (friend !== null) {
+      for (let i = 0; i < onlines.length; ++i) {
+        server.to(onlines[i].clientId).emit("friend_disconnected", {
+          message: "Your friend just offline",
+          friend: friend,
+        });
+      }
+    }
   }
 
-  startListeners(server: Server, client: Socket, email: string) {
+  async startListeners(server: Server, client: Socket, email: string) {
     // console.log("Message received from " + client.id, email);
 
     const checkClientId = this.users.filter((user) => {
@@ -53,6 +112,34 @@ export class SocketService {
       .emit("user_connected", { clientId: client.id, email: email });
 
     // console.log("Users from connected", this.users);
+
+    // Send online user to all friends
+    const friends = await this.getFriendsByUserEmail(email);
+
+    // Get all online friends of connected user
+    const onlines = [];
+
+    for (let i = 0; i < friends.length; ++i) {
+      for (let j = 0; j < this.users.length; ++j) {
+        if (this.users[j].email === friends[i].email) {
+          onlines.push(this.users[j]);
+        }
+      }
+    }
+
+    // Send online user to all online friend
+    const friend = await this.userRepository.findOne({
+      where: { email: email },
+    });
+
+    if (friend !== null) {
+      for (let i = 0; i < onlines.length; ++i) {
+        server.to(onlines[i].clientId).emit("friend_connected", {
+          message: "Your friend just online",
+          friend: friend,
+        });
+      }
+    }
 
     return {
       message: "Connect to sever socket successfully",
@@ -264,6 +351,49 @@ export class SocketService {
         senderEmail: senderEmail,
         receiverEmail: receiverEmail,
         status: false,
+      };
+    }
+  }
+
+  async getOnlineFriendsByUserEmail(server: Server, email: string) {
+    try {
+      const onlines = [];
+
+      const findUser = await this.userRepository.findOne({
+        where: { email: email },
+      });
+
+      if (findUser === null)
+        return {
+          message: "Get online friends, failed",
+          onlines: [],
+        };
+
+      // Get friends from database
+      const friends = await this.getFriendsByUserEmail(email);
+
+      // Get online user
+      for (let i = 0; i < this.users.length; ++i) {
+        for (let j = 0; j < friends.length; ++j) {
+          if (this.users[i].email === friends[j].email) {
+            onlines.push(friends[j]);
+          }
+        }
+      }
+
+      // Filter dublicate user
+      const uniqueOnlines = onlines?.filter((item, index, self) => {
+        return self.findIndex((obj) => obj.email === item.email) === index;
+      });
+
+      return {
+        message: "Get online friends, successfully",
+        onlines: uniqueOnlines,
+      };
+    } catch (error) {
+      return {
+        message: "Get online friends, failed",
+        onlines: [],
       };
     }
   }
