@@ -471,10 +471,21 @@ export class SocketService {
           .andWhere("friendEmail = :friendEmail", { friendEmail: friendEmail })
           .execute();
 
+        const findFriend = await this.userRepository.findOne({
+          where: { email: friendEmail },
+        });
+
+        if (findFriend === null) {
+          return {
+            message: "Delete direct message, failed",
+            ownerEmail: ownerEmail,
+            friendEmail: friendEmail,
+          };
+        }
+
         return {
           message: "Delete direct message, successfully",
-          ownerEmail: ownerEmail,
-          friendEmail: friendEmail,
+          friend: findFriend,
         };
       }
 
