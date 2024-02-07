@@ -55,4 +55,9 @@ export class UserController {
   getDirectMessagesByUserEmail(@Param("email") email: string) {
     return this.userService.getDirectMessagesByUserEmail(email);
   }
+
+  @Get("/id/:param")
+  getUserById(@Param("param") id: string) {
+    return this.userService.getUserById(id);
+  }
 }

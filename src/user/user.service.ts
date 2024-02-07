@@ -226,4 +226,20 @@ export class UserService {
       return { message: "Something wrong" };
     }
   }
+
+  async getUserById(id: string) {
+    try {
+      const findUser = await this.userRepository.findOne({
+        where: { id: id },
+      });
+
+      if (findUser !== null)
+        return { message: "Find user sucessfully", user: findUser };
+
+      return { message: "User not found", user: null };
+    } catch (error) {
+      console.log("Something wrong", error);
+      return { message: "Something wrong" };
+    }
+  }
 }
