@@ -9,5 +9,6 @@ import { User, Friend, FriendPending, DirectMessage } from "src/entities";
     TypeOrmModule.forFeature([User, Friend, FriendPending, DirectMessage]),
   ],
   providers: [SocketGateway, SocketService],
+  exports: [SocketService],
 })
 export class SocketModule {}
