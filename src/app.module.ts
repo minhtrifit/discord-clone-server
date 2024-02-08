@@ -7,6 +7,7 @@ import { UserModule } from "./user/user.module";
 import { ServerModule } from './server/server.module';
 import { SocketModule } from './socket/socket.module';
 import { ChatModule } from './chat/chat.module';
+import { MessageModule } from './message/message.module';
 import entities from "./entities";
 
 @Module({
@@ -30,6 +31,7 @@ import entities from "./entities";
     ServerModule,
     SocketModule,
     ChatModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
