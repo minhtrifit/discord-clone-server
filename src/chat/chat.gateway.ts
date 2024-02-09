@@ -32,4 +32,13 @@ export class ChatGateway {
       data.text,
     );
   }
+
+  @SubscribeMessage("get_all_chats")
+  getAllChatsById(@MessageBody() data: { userId: string; friendId: string }) {
+    return this.chatService.getAllChatsById(
+      this.server,
+      data.userId,
+      data.friendId,
+    );
+  }
 }

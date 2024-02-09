@@ -8,5 +8,6 @@ import { User, Chat } from "../entities/index";
   imports: [TypeOrmModule.forFeature([User, Chat])],
   controllers: [MessageController],
   providers: [MessageService],
+  exports: [MessageService],
 })
 export class MessageModule {}

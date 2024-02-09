@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { Server } from "socket.io";
 import { User, Chat, DirectMessage } from "src/entities";
 import { SocketService } from "src/socket/socket.service";
+import { MessageService } from "src/message/message.service";
 
 @Injectable()
 export class ChatService {
@@ -15,6 +16,7 @@ export class ChatService {
     private readonly socketService: SocketService,
     @InjectRepository(DirectMessage)
     private readonly directMessageRepository: Repository<DirectMessage>,
+    private readonly messageService: MessageService,
   ) {}
 
   async sendDirectMessage(
@@ -91,6 +93,54 @@ export class ChatService {
       };
     } catch (error) {
       console.log("Save direct message failed");
+    }
+  }
+
+  async getAllChatsById(server: Server, userId: string, friendId: string) {
+    try {
+      const findUser = this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      const findFriend = this.userRepository.findOne({
+        where: { id: friendId },
+      });
+
+      if (findUser === null || findFriend === null) {
+        return {
+          message: "Get all direct messages failed",
+          user: null,
+          friend: null,
+          chats: [],
+        };
+      }
+
+      // Get all chat
+      const findChats = await this.chatRepository.find({
+        where: { userId: userId, friendId: friendId },
+      });
+
+      const findChats2 = await this.chatRepository.find({
+        where: { userId: friendId, friendId: userId },
+      });
+
+      const chats = this.messageService.sortBySended(
+        findChats.concat(findChats2),
+      );
+
+      return {
+        message: "Get all direct messages successfully",
+        user: findUser,
+        friend: findFriend,
+        chats: chats,
+      };
+    } catch (error) {
+      return {
+        message: "Something wrong, get all direct messages failed",
+        user: null,
+        friend: null,
+        chats: [],
+      };
     }
   }
 }

@@ -12,7 +12,11 @@ export class MessageService {
     private readonly chatRepository: Repository<Chat>,
   ) {}
 
-  async getAllChatsById(userId: string, friendId) {
+  sortBySended(chats: Chat[]): Chat[] {
+    return chats.sort((a, b) => a.sended.getTime() - b.sended.getTime());
+  }
+
+  async getAllChatsById(userId: string, friendId: string) {
     try {
       const findUser = this.userRepository.findOne({
         where: { id: userId },
@@ -40,7 +44,7 @@ export class MessageService {
         where: { userId: friendId, friendId: userId },
       });
 
-      const chats = findChats.concat(findChats2);
+      const chats = this.sortBySended(findChats.concat(findChats2));
 
       return {
         message: "Get all direct messages successfully",
