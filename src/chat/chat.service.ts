@@ -23,13 +23,14 @@ export class ChatService {
     server: Server,
     userId: string,
     friendId: string,
+    provider: string,
     text: string,
   ) {
     try {
       const newDirectMessage = {
         userId: userId,
         type: "direct", // or server
-        provider: "text",
+        provider: provider,
         friendId: friendId,
         text: text,
       };
@@ -141,6 +142,39 @@ export class ChatService {
         friend: null,
         chats: [],
       };
+    }
+  }
+
+  async getAllDirectMessagesByUserEmailWithPrevUser(
+    server: Server,
+    email: string,
+    prevFriend: User,
+  ) {
+    try {
+      const findDirectMessages = await this.directMessageRepository.find({
+        where: { ownerEmail: email },
+      });
+
+      const friends = [];
+
+      for (let i = 0; i < findDirectMessages.length; ++i) {
+        const findUser = await this.userRepository.findOne({
+          where: { email: findDirectMessages[i].friendEmail },
+        });
+
+        friends.push(findUser);
+      }
+
+      const checkPrevFriend = friends.filter((user) => {
+        return user.id === prevFriend.id;
+      });
+
+      if (checkPrevFriend.length === 0) friends.push(prevFriend);
+
+      return { message: "Get direct messages successfully", friends: friends };
+    } catch (error) {
+      console.log("Something wrong", error);
+      return { message: "Something wrong" };
     }
   }
 }

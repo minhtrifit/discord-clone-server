@@ -10,5 +10,6 @@ import { User, Friend, FriendPending, DirectMessage } from "../entities/index";
   ],
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService],
 })
 export class UserModule {}
