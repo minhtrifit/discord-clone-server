@@ -60,4 +60,16 @@ export class ChatGateway {
       data.prevFriend,
     );
   }
+
+  @SubscribeMessage("delete_chat_by_id")
+  deleteChatById(
+    @MessageBody() data: { chatId: string; userId: string; friendId: string },
+  ) {
+    return this.chatService.deleteChatById(
+      this.server,
+      data.chatId,
+      data.userId,
+      data.friendId,
+    );
+  }
 }

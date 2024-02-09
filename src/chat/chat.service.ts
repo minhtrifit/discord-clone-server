@@ -99,11 +99,11 @@ export class ChatService {
 
   async getAllChatsById(server: Server, userId: string, friendId: string) {
     try {
-      const findUser = this.userRepository.findOne({
+      const findUser = await this.userRepository.findOne({
         where: { id: userId },
       });
 
-      const findFriend = this.userRepository.findOne({
+      const findFriend = await this.userRepository.findOne({
         where: { id: friendId },
       });
 
@@ -175,6 +175,103 @@ export class ChatService {
     } catch (error) {
       console.log("Something wrong", error);
       return { message: "Something wrong" };
+    }
+  }
+
+  async deleteChatById(
+    server: Server,
+    chatId: string,
+    userId: string,
+    friendId: string,
+  ) {
+    try {
+      const findChat = await this.chatRepository.findOne({
+        where: { id: chatId },
+      });
+
+      if (findChat === null) {
+        return {
+          message: "Chat not found",
+          status: false,
+        };
+      }
+
+      if (findChat.userId !== userId) {
+        return {
+          message: "You dont have permission to do that",
+          status: false,
+        };
+      }
+
+      const res = await this.chatRepository
+        .createQueryBuilder()
+        .delete()
+        .from(Chat)
+        .where("id = :id", { id: findChat.id })
+        .execute();
+
+      // Find user client
+      const getUserById = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (getUserById === null) {
+        return {
+          message: "User not found",
+          status: false,
+        };
+      }
+
+      const findUserClient = this.socketService.users.filter((user) => {
+        return user.email === getUserById.email;
+      });
+
+      // Find friend client
+      const getFriendById = await this.userRepository.findOne({
+        where: { id: friendId },
+      });
+
+      if (getFriendById === null) {
+        return {
+          message: "User not found",
+          status: false,
+        };
+      }
+
+      const findFriendClient = this.socketService.users.filter((user) => {
+        return user.email === getFriendById.email;
+      });
+
+      // Send event to client
+      const message = `Chat by ${getUserById.name} has been deleted`;
+
+      for (let i = 0; i < findUserClient.length; ++i) {
+        server.to(findUserClient[i].clientId).emit("get_chat_delete", {
+          message: message,
+          status: true,
+          userId: userId,
+          friendId: friendId,
+        });
+      }
+
+      for (let i = 0; i < findFriendClient.length; ++i) {
+        server.to(findFriendClient[i].clientId).emit("get_chat_delete", {
+          message: message,
+          status: true,
+          userId: userId,
+          friendId: friendId,
+        });
+      }
+
+      return {
+        message: "Delete chat successfully",
+        status: true,
+      };
+    } catch (error) {
+      return {
+        message: "Chat not found",
+        status: false,
+      };
     }
   }
 }
