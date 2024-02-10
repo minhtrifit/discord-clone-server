@@ -30,6 +30,7 @@ export class ChatGateway {
       friendId: string;
       provider: string;
       text: string;
+      url: string;
     },
   ) {
     return this.chatService.sendDirectMessage(
@@ -38,6 +39,7 @@ export class ChatGateway {
       data.friendId,
       data.provider,
       data.text,
+      data.url,
     );
   }
 

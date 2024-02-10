@@ -25,15 +25,28 @@ export class ChatService {
     friendId: string,
     provider: string,
     text: string,
+    url: string,
   ) {
     try {
-      const newDirectMessage = {
-        userId: userId,
-        type: "direct", // or server
-        provider: provider,
-        friendId: friendId,
-        text: text,
-      };
+      let newDirectMessage = null;
+
+      if (provider === "text") {
+        newDirectMessage = {
+          userId: userId,
+          type: "direct", // or server
+          provider: provider,
+          friendId: friendId,
+          text: text,
+        };
+      } else if (provider === "image") {
+        newDirectMessage = {
+          userId: userId,
+          type: "direct", // or server
+          provider: provider,
+          friendId: friendId,
+          url: url,
+        };
+      }
 
       const res = await this.chatRepository.save(newDirectMessage);
 
