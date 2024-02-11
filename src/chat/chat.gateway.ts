@@ -30,6 +30,7 @@ export class ChatGateway {
       friendId: string;
       provider: string;
       text: string;
+      fileName: string;
       url: string;
     },
   ) {
@@ -39,6 +40,7 @@ export class ChatGateway {
       data.friendId,
       data.provider,
       data.text,
+      data.fileName,
       data.url,
     );
   }

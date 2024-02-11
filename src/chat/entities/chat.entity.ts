@@ -26,6 +26,9 @@ export class Chat {
   @Column({ nullable: true, default: null }) // provider is image or file or... have url, this collumn store it
   url: string;
 
+  @Column({ nullable: true, default: null }) // file name (.pdf, .docs, .xlsx,...)
+  fileName: string;
+
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   sended: Date;
 }

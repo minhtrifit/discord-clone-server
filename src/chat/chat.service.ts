@@ -25,6 +25,7 @@ export class ChatService {
     friendId: string,
     provider: string,
     text: string,
+    fileName: string,
     url: string,
   ) {
     try {
@@ -44,6 +45,15 @@ export class ChatService {
           type: "direct", // or server
           provider: provider,
           friendId: friendId,
+          url: url,
+        };
+      } else if (provider === "file") {
+        newDirectMessage = {
+          userId: userId,
+          type: "direct", // or server
+          provider: provider,
+          friendId: friendId,
+          fileName: fileName,
           url: url,
         };
       }
