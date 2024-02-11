@@ -61,4 +61,40 @@ export class ServerService {
       return { message: "Something wrong" };
     }
   }
+
+  async getDetailServerById(id: string) {
+    try {
+      const findServer = await this.serverRepository.findOne({
+        where: { id: id },
+      });
+
+      if (findServer === null) {
+        return {
+          message: "Not found server",
+          server: null,
+        };
+      }
+
+      const findServerOwner = await this.userRepository.findOne({
+        where: { id: findServer.owner },
+      });
+
+      if (findServerOwner === null) {
+        return {
+          message: "Not found server owner",
+          server: null,
+        };
+      }
+
+      return {
+        message: "Get detail server successfully",
+        server: { ...findServer, owner: findServerOwner },
+      };
+    } catch (error) {
+      return {
+        message: "Get detail server failed",
+        server: null,
+      };
+    }
+  }
 }
