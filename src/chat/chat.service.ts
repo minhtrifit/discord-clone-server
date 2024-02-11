@@ -107,6 +107,12 @@ export class ChatService {
       };
     } catch (error) {
       console.log("Save direct message failed");
+      return {
+        message: "Send direct message failed",
+        user: null,
+        friend: null,
+        chat: null,
+      };
     }
   }
 
