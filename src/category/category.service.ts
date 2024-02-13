@@ -90,11 +90,6 @@ export class CategoryService {
         where: { categoryId: res?.id },
       });
 
-      // Get all server's member
-      const findMembers = await this.joinServerRepository.find({
-        where: { serverId: serverId },
-      });
-
       // Send event to server's member client
       const memberClients =
         await this.getServerMemberClientByServerId(serverId);
