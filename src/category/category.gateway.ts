@@ -57,4 +57,40 @@ export class CategoryGateway {
       data.type,
     );
   }
+
+  @SubscribeMessage("delete_channel_by_id")
+  deleteChannelById(
+    @MessageBody()
+    data: {
+      userId: string;
+      serverId: string;
+      categoryId: string;
+      channelId: string;
+    },
+  ) {
+    return this.categoryService.deleteChannelById(
+      this.server,
+      data.userId,
+      data.serverId,
+      data.categoryId,
+      data.channelId,
+    );
+  }
+
+  @SubscribeMessage("delete_category_by_id")
+  deleteCategoryById(
+    @MessageBody()
+    data: {
+      userId: string;
+      serverId: string;
+      categoryId: string;
+    },
+  ) {
+    return this.categoryService.deleteCategoryById(
+      this.server,
+      data.userId,
+      data.serverId,
+      data.categoryId,
+    );
+  }
 }

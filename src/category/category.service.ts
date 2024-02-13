@@ -216,4 +216,196 @@ export class CategoryService {
       };
     }
   }
+
+  async deleteChannelById(
+    server: Server,
+    userId: string,
+    serverId: string,
+    categoryId: string,
+    channelId: string,
+  ) {
+    try {
+      let checkPermission = false;
+
+      // Check exist channel
+      const findChannel = await this.channelRepository.findOne({
+        where: { id: channelId },
+      });
+
+      if (findChannel === null) {
+        return {
+          message: "Delete channel by id failed",
+          status: false,
+        };
+      }
+
+      // Check owner permission
+      const findCategory = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      });
+
+      if (findCategory === null) {
+        return {
+          message: "Delete channel by id failed",
+          status: false,
+        };
+      }
+
+      const findServer = await this.serverRepository.findOne({
+        where: { id: serverId },
+      });
+
+      if (findServer === null) {
+        return {
+          message: "Delete channel by id failed",
+          status: false,
+        };
+      }
+
+      const findOwner = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (findOwner === null) {
+        return {
+          message: "Delete channel by id failed",
+          status: false,
+        };
+      }
+
+      // More permission...
+
+      // Set if all permissions is correct
+      checkPermission = true;
+
+      if (checkPermission) {
+        await this.channelRepository
+          .createQueryBuilder()
+          .delete()
+          .from(Channel)
+          .where("id = :id", { id: channelId })
+          .execute();
+
+        // Send event to server's member client
+        const memberClients =
+          await this.getServerMemberClientByServerId(serverId);
+
+        for (let i = 0; i < memberClients.length; ++i) {
+          server.to(memberClients[i].clientId).emit("get_delete_channel", {
+            message: "Your server delete a channel",
+            channelId: channelId,
+          });
+        }
+
+        return {
+          message: "Delete channel by id successfully",
+          status: true,
+        };
+      }
+
+      return {
+        message: "Delete channel by id failed",
+        status: false,
+      };
+    } catch (error) {
+      return {
+        message: "Delete channel by id failed",
+        status: false,
+      };
+    }
+  }
+
+  async deleteCategoryById(
+    server: Server,
+    userId: string,
+    serverId: string,
+    categoryId: string,
+  ) {
+    try {
+      let checkPermission = false;
+
+      // Check exist category
+      const findCategory = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      });
+
+      if (findCategory === null) {
+        return {
+          message: "Delete channel by id failed",
+          status: false,
+        };
+      }
+
+      // Check owner permission
+      const findServer = await this.serverRepository.findOne({
+        where: { id: serverId },
+      });
+
+      if (findServer === null) {
+        return {
+          message: "Delete channel by id failed",
+          status: false,
+        };
+      }
+
+      const findOwner = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (findOwner === null) {
+        return {
+          message: "Delete category by id failed",
+          status: false,
+        };
+      }
+
+      // More permission...
+
+      // Set if all permissions is correct
+      checkPermission = true;
+
+      if (checkPermission) {
+        // Delete all category channels
+        await this.channelRepository
+          .createQueryBuilder()
+          .delete()
+          .from(Channel)
+          .where("categoryId = :categoryId", { categoryId: categoryId })
+          .execute();
+
+        await this.channelRepository
+          .createQueryBuilder()
+          .delete()
+          .from(Category)
+          .where("id = :id", { id: categoryId })
+          .execute();
+
+        // Send event to server's member client
+        const memberClients =
+          await this.getServerMemberClientByServerId(serverId);
+
+        for (let i = 0; i < memberClients.length; ++i) {
+          server.to(memberClients[i].clientId).emit("get_delete_category", {
+            message: "Your server delete a category",
+            categoryId: categoryId,
+          });
+        }
+
+        return {
+          message: "Delete category by id successfully",
+          status: true,
+        };
+      }
+
+      return {
+        message: "Delete category by id failed",
+        status: false,
+      };
+    } catch (error) {
+      return {
+        message: "Delete category by id failed",
+        status: false,
+      };
+    }
+  }
 }
