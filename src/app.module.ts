@@ -8,6 +8,7 @@ import { ServerModule } from './server/server.module';
 import { SocketModule } from './socket/socket.module';
 import { ChatModule } from './chat/chat.module';
 import { MessageModule } from './message/message.module';
+import { CategoryModule } from './category/category.module';
 import entities from "./entities";
 
 @Module({
@@ -32,6 +33,7 @@ import entities from "./entities";
     SocketModule,
     ChatModule,
     MessageModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

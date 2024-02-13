@@ -20,6 +20,9 @@ export class Chat {
   @Column({ nullable: true, default: null }) // type is server messages, this collumn store server id
   serverId: string;
 
+  @Column({ nullable: true, default: null }) // type is server messages, this collumn store channel id
+  channelId: string;
+
   @Column({ nullable: true, default: null }) // provider is text, this collumn store it
   text: string;
 

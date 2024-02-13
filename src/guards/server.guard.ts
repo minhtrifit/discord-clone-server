@@ -7,9 +7,11 @@ export class ServerJoinGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
+    const userId = request?.headers?.userid;
 
-    console.log("HEADER", request.headers);
+    // console.log("HEADER USER ID", userId);
 
-    return true;
+    if (userId !== undefined) return true;
+    return false;
   }
 }
