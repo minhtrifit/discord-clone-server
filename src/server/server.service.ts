@@ -2,7 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { CreateServerDto } from "./dto/create-server.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { JoinServer, Server, User } from "../entities/index";
+import {
+  JoinServer,
+  Server,
+  User,
+  Chat,
+  Category,
+  Channel,
+} from "../entities/index";
 
 @Injectable()
 export class ServerService {
@@ -13,6 +20,12 @@ export class ServerService {
     private readonly joinServerRepository: Repository<JoinServer>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Chat)
+    private readonly chatRepository: Repository<Chat>,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Channel)
+    private readonly channelRepository: Repository<Channel>,
   ) {}
 
   async createNewServer(newServer: CreateServerDto) {
@@ -94,6 +107,81 @@ export class ServerService {
       return {
         message: "Get detail server failed",
         server: null,
+      };
+    }
+  }
+
+  async getAllChatsByChannelId(channelId: string) {
+    try {
+      // Check exist channel
+      const findChannel = await this.channelRepository.findOne({
+        where: { id: channelId },
+      });
+
+      if (findChannel === null) {
+        return {
+          message: "Get all chats by channel id failed",
+          channel: null,
+          chats: [],
+        };
+      }
+
+      const findChats = await this.chatRepository.find({
+        where: { channelId: channelId },
+      });
+
+      const chats = [];
+
+      for (let i = 0; i < findChats.length; ++i) {
+        const findUser = await this.userRepository.findOne({
+          where: { id: findChats[i].userId },
+        });
+
+        if (findUser !== null) {
+          const chat = {
+            ...findChats[i],
+            user: findUser,
+          };
+          chats.push(chat);
+        }
+      }
+
+      return {
+        message: "Get all chats by channel id successfully",
+        channel: findChannel,
+        chats: chats,
+      };
+    } catch (error) {
+      return {
+        message: "Get all chats by channel id failed",
+        channel: null,
+        chats: [],
+      };
+    }
+  }
+
+  async getChannelById(channelId: string) {
+    try {
+      // Check exist channel
+      const findChannel = await this.channelRepository.findOne({
+        where: { id: channelId },
+      });
+
+      if (findChannel === null) {
+        return {
+          message: "Get channel by id failed",
+          channel: null,
+        };
+      }
+
+      return {
+        message: "Get channel by id successfully",
+        channel: findChannel,
+      };
+    } catch (error) {
+      return {
+        message: "Get channel by id failed",
+        channel: null,
       };
     }
   }

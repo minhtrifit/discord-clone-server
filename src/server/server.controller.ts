@@ -22,4 +22,16 @@ export class ServerController {
   getDetailServerById(@Param("id") id: string) {
     return this.serverService.getDetailServerById(id);
   }
+
+  @Get("/channel/chat/:id")
+  @UseGuards(ServerJoinGuard)
+  getAllChatsByChannelId(@Param("id") id: string) {
+    return this.serverService.getAllChatsByChannelId(id);
+  }
+
+  @Get("/channel/:id")
+  @UseGuards(ServerJoinGuard)
+  getChannelById(@Param("id") id: string) {
+    return this.serverService.getChannelById(id);
+  }
 }

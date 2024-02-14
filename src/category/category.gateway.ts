@@ -93,4 +93,46 @@ export class CategoryGateway {
       data.categoryId,
     );
   }
+
+  @SubscribeMessage("send_channel_message")
+  sendChannelMessage(
+    @MessageBody()
+    data: {
+      userId: string;
+      serverId: string;
+      channelId: string;
+      provider: string;
+      text: string;
+      fileName: string;
+      url: string;
+    },
+  ) {
+    return this.categoryService.sendChannelMessage(
+      this.server,
+      data.userId,
+      data.serverId,
+      data.channelId,
+      data.provider,
+      data.text,
+      data.fileName,
+      data.url,
+    );
+  }
+
+  @SubscribeMessage("get_all_channel_chats")
+  getAllChannelChats(
+    @MessageBody()
+    data: {
+      userId: string;
+      serverId: string;
+      channelId: string;
+    },
+  ) {
+    return this.categoryService.getAllChannelChats(
+      this.server,
+      data.userId,
+      data.serverId,
+      data.channelId,
+    );
+  }
 }

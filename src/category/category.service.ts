@@ -7,6 +7,7 @@ import {
   JoinServer,
   Category,
   Channel,
+  Chat,
 } from "src/entities";
 import { Repository } from "typeorm";
 import { SocketService } from "src/socket/socket.service";
@@ -25,6 +26,8 @@ export class CategoryService {
     private readonly socketService: SocketService,
     @InjectRepository(JoinServer)
     private readonly joinServerRepository: Repository<JoinServer>,
+    @InjectRepository(Chat)
+    private readonly chatRepository: Repository<Chat>,
   ) {}
 
   async getServerMemberClientByServerId(serverId: string) {
@@ -52,9 +55,13 @@ export class CategoryService {
       }
     }
 
-    console.log("MEMBER CLIENT", memberClients);
+    // console.log("MEMBER CLIENT", memberClients);
 
     return memberClients;
+  }
+
+  sortBySended(chats: Chat[]): Chat[] {
+    return chats.sort((a, b) => a.sended.getTime() - b.sended.getTime());
   }
 
   async createNewCategory(
@@ -151,7 +158,7 @@ export class CategoryService {
         categories.push(categoryWithChannels);
       }
 
-      console.log(categories);
+      // console.log(categories);
 
       return {
         message: "Get all categories by server id successfully",
@@ -405,6 +412,147 @@ export class CategoryService {
       return {
         message: "Delete category by id failed",
         status: false,
+      };
+    }
+  }
+
+  async sendChannelMessage(
+    server: Server,
+    userId: string,
+    serverId: string,
+    channelId: string,
+    provider: string,
+    text: string,
+    fileName: string,
+    url: string,
+  ) {
+    try {
+      let newChannelMessage = null;
+
+      if (provider === "text") {
+        newChannelMessage = {
+          userId: userId,
+          type: "channel",
+          provider: provider,
+          serverId: serverId,
+          channelId: channelId,
+          text: text,
+        };
+      } else if (provider === "image") {
+        newChannelMessage = {
+          userId: userId,
+          type: "channel",
+          provider: provider,
+          serverId: serverId,
+          channelId: channelId,
+          url: url,
+        };
+      } else if (provider === "file") {
+        newChannelMessage = {
+          userId: userId,
+          type: "channel",
+          provider: provider,
+          serverId: serverId,
+          channelId: channelId,
+          fileName: fileName,
+          url: url,
+        };
+      }
+
+      const res = await this.chatRepository.save(newChannelMessage);
+
+      const findUser = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (findUser === null) {
+        return {
+          message: "Send channel message failed",
+          user: null,
+          chat: null,
+        };
+      }
+
+      // Find online receiver id
+      const findMemberClient =
+        await this.getServerMemberClientByServerId(serverId);
+
+      // Send event to client
+      if (findMemberClient?.length !== 0) {
+        for (let i = 0; i < findMemberClient.length; ++i) {
+          console.log("MEMBER CLIENT", findMemberClient[i].email);
+          server
+            .to(findMemberClient[i].clientId)
+            .emit("receive_channel_message", {
+              message: "You have new channel message",
+              user: findUser,
+              chats: res,
+            });
+        }
+      }
+
+      return {
+        message: "Send channel message successfully",
+        user: findUser,
+        chat: res,
+      };
+    } catch (error) {
+      console.log("Save channel message failed");
+      return {
+        message: "Send channel message failed",
+        user: null,
+        chat: null,
+      };
+    }
+  }
+
+  async getAllChannelChats(
+    server: Server,
+    userId: string,
+    serverId: string,
+    channelId: string,
+  ) {
+    try {
+      // Check exist channel
+      const findChannel = await this.channelRepository.findOne({
+        where: { id: channelId },
+      });
+
+      if (findChannel === null) {
+        return {
+          message: "Send channel message failed",
+          chats: null,
+        };
+      }
+
+      // Find all channel chat
+      const findChannelChats = await this.chatRepository.find({
+        where: { channelId: channelId },
+      });
+
+      const chats = [];
+
+      for (let i = 0; i < findChannelChats.length; ++i) {
+        const findUser = await this.userRepository.findOne({
+          where: { id: findChannelChats[i].userId },
+        });
+
+        if (findUser !== null) {
+          const chat = { ...findChannelChats[i], user: findUser };
+          chats.push(chat);
+        }
+      }
+
+      const chatsBySended = this.sortBySended(chats);
+
+      return {
+        message: "Get all channel chats successfully",
+        chats: chatsBySended,
+      };
+    } catch (error) {
+      return {
+        message: "Get all channel chats failed",
+        chats: null,
       };
     }
   }
