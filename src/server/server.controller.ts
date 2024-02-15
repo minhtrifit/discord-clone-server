@@ -34,4 +34,19 @@ export class ServerController {
   getChannelById(@Param("id") id: string) {
     return this.serverService.getChannelById(id);
   }
+
+  @Get("/invite/:id")
+  @UseGuards(ServerJoinGuard)
+  getServerInviteLink(@Param("id") id: string) {
+    return this.serverService.getServerInviteLink(id);
+  }
+
+  @Post("/invite")
+  @UseGuards(ServerJoinGuard)
+  joinServerByInviteLink(@Body() body: { userId: string; inviteLink: string }) {
+    return this.serverService.joinServerByInviteLink(
+      body.userId,
+      body.inviteLink,
+    );
+  }
 }

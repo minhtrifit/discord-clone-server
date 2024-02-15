@@ -185,4 +185,87 @@ export class ServerService {
       };
     }
   }
+
+  async getServerInviteLink(serverId: string) {
+    try {
+      // Check exist server
+      const findServer = await this.serverRepository.findOne({
+        where: { id: serverId },
+      });
+
+      if (findServer === null) {
+        return {
+          message: "Get server invite link failed",
+          inviteLink: null,
+        };
+      }
+
+      // Create invite link
+      const inviteLink = `${process.env.CLIENT_URL}/discord.gg/${findServer?.id}`;
+
+      return {
+        message: "Get server invite link successfully",
+        inviteLink: inviteLink,
+      };
+    } catch (error) {
+      return {
+        message: "Get server invite link failed",
+        inviteLink: null,
+      };
+    }
+  }
+
+  async joinServerByInviteLink(userId: string, inviteLink: string) {
+    try {
+      const serverId = inviteLink.split("/discord.gg/")[1];
+
+      if (serverId) {
+        const findServer = await this.serverRepository.findOne({
+          where: { id: serverId },
+        });
+
+        const findUser = await this.userRepository.findOne({
+          where: { id: userId },
+        });
+
+        if (findServer === null || findUser === null) {
+          return {
+            message: "Join server by invite link failed",
+            clientUrl: process.env.CLIENT_URL,
+            server: null,
+          };
+        }
+
+        const newJoin = {
+          serverId: serverId,
+          userId: userId,
+        };
+
+        const findServerJoin = await this.joinServerRepository.findOne({
+          where: { serverId: serverId, userId: userId },
+        });
+
+        if (findServerJoin === null)
+          await this.joinServerRepository.save(newJoin);
+
+        return {
+          message: "Join server by invite link successfully",
+          clientUrl: process.env.CLIENT_URL,
+          server: findServer,
+        };
+      }
+
+      return {
+        message: "Join server by invite link failed",
+        clientUrl: process.env.CLIENT_URL,
+        server: null,
+      };
+    } catch (error) {
+      return {
+        message: "Join server by invite link failed",
+        clientUrl: process.env.CLIENT_URL,
+        server: null,
+      };
+    }
+  }
 }
