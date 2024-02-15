@@ -556,4 +556,48 @@ export class CategoryService {
       };
     }
   }
+
+  async leaveServer(server: Server, userId: string, serverId) {
+    try {
+      // Check exist server
+      const findServer = await this.serverRepository.findOne({
+        where: { id: serverId },
+      });
+
+      if (findServer === null) {
+        return {
+          message: "Leave server failed",
+        };
+      }
+
+      // Check exist user
+      const findUser = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (findUser === null) {
+        return {
+          message: "Leave server failed",
+        };
+      }
+
+      const res = await this.channelRepository
+        .createQueryBuilder()
+        .delete()
+        .from(JoinServer)
+        .where("serverId = :serverId", { serverId: serverId })
+        .andWhere("userId = :userId", { userId: userId })
+        .execute();
+
+      console.log(res);
+
+      return {
+        message: "Leave server successfully",
+      };
+    } catch (error) {
+      return {
+        message: "Leave server failed",
+      };
+    }
+  }
 }

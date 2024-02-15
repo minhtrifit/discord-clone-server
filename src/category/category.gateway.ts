@@ -135,4 +135,19 @@ export class CategoryGateway {
       data.channelId,
     );
   }
+
+  @SubscribeMessage("leave_server")
+  leaveServer(
+    @MessageBody()
+    data: {
+      userId: string;
+      serverId: string;
+    },
+  ) {
+    return this.categoryService.leaveServer(
+      this.server,
+      data.userId,
+      data.serverId,
+    );
+  }
 }
