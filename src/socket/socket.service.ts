@@ -1,7 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Server, Socket } from "socket.io";
-import { User, Friend, FriendPending, DirectMessage } from "src/entities";
+import {
+  User,
+  Friend,
+  FriendPending,
+  DirectMessage,
+  Server as DiscordServer,
+  JoinServer,
+} from "src/entities";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -15,9 +22,38 @@ export class SocketService {
     private readonly friendPendingRepository: Repository<FriendPending>,
     @InjectRepository(DirectMessage)
     private readonly directMessageRepository: Repository<DirectMessage>,
+    @InjectRepository(DiscordServer)
+    private readonly serverRepository: Repository<DiscordServer>,
+    @InjectRepository(JoinServer)
+    private readonly joinServerRepository: Repository<JoinServer>,
   ) {}
 
   users: { email: string; clientId: string }[] = [];
+
+  checkExistOnlineUser(
+    socketUser: { email: string; clientId: string }[],
+    user: User,
+  ) {
+    for (let i = 0; i < socketUser.length; ++i) {
+      if (socketUser[i].email === user.email) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async checkUserIsServerMember(userId, serverId) {
+    const getAllServerJoins = await this.joinServerRepository.find({
+      where: { serverId: serverId },
+    });
+
+    for (let i = 0; i < getAllServerJoins.length; ++i) {
+      if (getAllServerJoins[i].userId === userId) return true;
+    }
+
+    return false;
+  }
 
   async getFriendsByUserEmail(userEmail: string) {
     const friends = [];

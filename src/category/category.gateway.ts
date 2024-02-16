@@ -150,4 +150,14 @@ export class CategoryGateway {
       data.serverId,
     );
   }
+
+  @SubscribeMessage("get_server_members")
+  getServerMembers(
+    @MessageBody()
+    data: {
+      serverId: string;
+    },
+  ) {
+    return this.categoryService.getServerMembers(this.server, data.serverId);
+  }
 }

@@ -64,6 +64,29 @@ export class CategoryService {
     return chats.sort((a, b) => a.sended.getTime() - b.sended.getTime());
   }
 
+  checkExistUserByEmail(arr: User[], user: User) {
+    for (let i = 0; i < arr.length; ++i) {
+      if (arr[i].email === user.email) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  checkExistOnlineUser(
+    socketUser: { email: string; clientId: string }[],
+    user: User,
+  ) {
+    for (let i = 0; i < socketUser.length; ++i) {
+      if (socketUser[i].email === user.email) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   async createNewCategory(
     server: Server,
     serverId: string,
@@ -581,7 +604,7 @@ export class CategoryService {
         };
       }
 
-      const res = await this.channelRepository
+      await this.channelRepository
         .createQueryBuilder()
         .delete()
         .from(JoinServer)
@@ -589,14 +612,97 @@ export class CategoryService {
         .andWhere("userId = :userId", { userId: userId })
         .execute();
 
-      console.log(res);
-
       return {
         message: "Leave server successfully",
       };
     } catch (error) {
       return {
         message: "Leave server failed",
+      };
+    }
+  }
+
+  async getServerMembers(server: Server, serverId: string) {
+    try {
+      // Check exist server
+      const findServer = await this.serverRepository.findOne({
+        where: { id: serverId },
+      });
+
+      if (findServer === null) {
+        return {
+          message: "Get server members failed",
+          server: null,
+          members: null,
+        };
+      }
+
+      const members = [];
+
+      // Get all serevr member
+      const AllMembers = [];
+
+      const findAllMembers = await this.joinServerRepository.find({
+        where: { serverId: serverId },
+      });
+
+      for (let i = 0; i < findAllMembers.length; ++i) {
+        const member = await this.userRepository.findOne({
+          where: { id: findAllMembers[i].userId },
+        });
+
+        if (member !== null) AllMembers.push(member);
+      }
+
+      // Get online members
+      const onlines = [];
+
+      for (let i = 0; i < this.socketService.users.length; ++i) {
+        for (let j = 0; j < AllMembers.length; ++j) {
+          if (
+            this.socketService.users[i].email === AllMembers[j].email &&
+            !this.checkExistUserByEmail(onlines, AllMembers[j])
+          ) {
+            onlines.push(AllMembers[j]);
+          }
+        }
+      }
+
+      const newOnlines = {
+        role: "online",
+        members: onlines,
+      };
+
+      members.push(newOnlines);
+
+      // Get offline member
+      const offlines = [];
+
+      for (let i = 0; i < AllMembers.length; ++i) {
+        if (
+          !this.checkExistOnlineUser(this.socketService.users, AllMembers[i])
+        ) {
+          offlines.push(AllMembers[i]);
+        }
+      }
+
+      const newOfflines = {
+        role: "offline",
+        members: offlines,
+      };
+
+      members.push(newOfflines);
+
+      return {
+        message: "Get server members successfully",
+        server: findServer,
+        members: members,
+      };
+    } catch (error) {
+      return {
+        message: "Get server members failed",
+        server: null,
+        members: null,
       };
     }
   }
