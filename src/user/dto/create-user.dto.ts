@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional } from "class-validator";
+import { IsNotEmpty, IsString, IsOptional, IsBoolean } from "class-validator";
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -20,6 +20,10 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   avatar: string | null;
+
+  @IsBoolean()
+  @IsOptional()
+  isAdmin: boolean | null;
 }
 
 export class EditUserDto {

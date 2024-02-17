@@ -20,6 +20,9 @@ export class User {
   @Column({ nullable: true, default: null })
   avatar: string;
 
+  @Column({ nullable: true, default: false })
+  isAdmin: boolean;
+
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   created: Date;
 }
