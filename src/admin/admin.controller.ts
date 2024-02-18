@@ -22,4 +22,14 @@ export class AdminController {
   getAllServer() {
     return this.adminService.getAllServer();
   }
+
+  @Get("/servers/analysis")
+  getServersAnalysis() {
+    return this.adminService.getServersAnalysis();
+  }
+
+  @Get("/chats")
+  getAllChats() {
+    return this.adminService.getAllChats();
+  }
 }
